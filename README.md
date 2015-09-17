@@ -298,7 +298,7 @@ make
 ```
 
 
-### Java 1.7
+### Java >= 1.7
 
 The Java implementation of mal requires maven2 to build.
 
