@@ -1,17 +1,13 @@
 package mal;
 
-import java.util.HashMap;
+import mal.types.*;
 
-import mal.types.MalThrowable;
-import mal.types.MalException;
-import mal.types.MalVal;
-import mal.types.MalSymbol;
-import mal.types.MalList;
+import java.util.HashMap;
 
 public class env {
     public static class Env {
         Env outer = null;
-        HashMap<String,MalVal> data = new HashMap<String,MalVal>();
+        HashMap<String,MalVal> data = new HashMap<>();
 
         public Env(Env outer) {
             this.outer = outer;

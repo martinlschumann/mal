@@ -1,13 +1,8 @@
 package mal;
 
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Set;
-import java.util.Map;
-import java.util.HashMap;
-
-import mal.printer;
 import mal.env.Env;
+
+import java.util.*;
 
 public class types {
     //
@@ -45,8 +40,8 @@ public class types {
             return false;
         } else {
             if (a instanceof MalInteger) {
-                return ((MalInteger)a).getValue() ==
-                       ((MalInteger)b).getValue();
+                return ((MalInteger)a).getValue().intValue() ==
+                       ((MalInteger)b).getValue().intValue();
             } else if (a instanceof MalSymbol) {
                 return ((MalSymbol)a).getName().equals(
                        ((MalSymbol)b).getName());
@@ -54,7 +49,7 @@ public class types {
                 return ((MalString)a).getValue().equals(
                        ((MalString)b).getValue());
             } else if (a instanceof MalList) {
-                if (((MalList)a).size() != ((MalList)b).size()) {
+                if (((MalList)a).size().intValue() != ((MalList)b).size().intValue()) {
                     return false;
                 }
                 for (Integer i=0; i<((MalList)a).size(); i++) {
@@ -106,9 +101,9 @@ public class types {
 
         public String toString() { return value; }
     }
-    public static MalConstant Nil = new MalConstant("nil");
-    public static MalConstant True = new MalConstant("true");
-    public static MalConstant False = new MalConstant("false");
+    public final static MalConstant Nil = new MalConstant("nil");
+    public final static MalConstant True = new MalConstant("true");
+    public final static MalConstant False = new MalConstant("false");
 
     public static class MalInteger extends MalVal {
         Integer value;
@@ -179,12 +174,12 @@ public class types {
 
     public static class MalList extends MalVal {
         String start = "(", end = ")";
-        List value;
-        public MalList(List val) {
+        List<MalVal> value;
+        public MalList(List<MalVal> val) {
             value = val;
         }
         public MalList(MalVal... mvs) {
-            value = new ArrayList<MalVal>();
+            value = new ArrayList<>();
             conj_BANG(mvs);
         }
         public MalList copy() throws MalThrowable {
@@ -201,13 +196,11 @@ public class types {
             return start + printer.join(value, " ", print_readably) + end;
         }
 
-        public List getList() { return value; }
+        public List<MalVal> getList() { return value; }
         public Boolean list_Q() { return true; }
         
         public MalList conj_BANG(MalVal... mvs) {
-            for (MalVal mv : mvs) {
-                value.add(mv);
-            }
+            Collections.addAll(value, mvs);
             return this;
         }
 
@@ -216,7 +209,7 @@ public class types {
         }
 
         public MalVal nth(Integer idx) {
-            return (MalVal)value.get(idx);
+            return value.get(idx);
         }
         public MalList rest () {
             if (size() > 0) {
@@ -237,7 +230,7 @@ public class types {
 
     public static class MalVector extends MalList {
         // Same implementation except for instantiation methods
-        public MalVector(List val) {
+        public MalVector(List<MalVal> val) {
             value = val;
             start = "[";
             end = "]";
@@ -262,20 +255,20 @@ public class types {
     }
 
     public static class MalHashMap extends MalVal {
-        Map value;
-        public MalHashMap(Map val) {
+        Map<String, MalVal> value;
+        public MalHashMap(Map<String, MalVal> val) {
             value = val;
         }
         public MalHashMap(MalList lst) {
-            value = new HashMap<String, MalVal>();
+            value = new HashMap<>();
             assoc_BANG(lst);
         }
         public MalHashMap(MalVal... mvs) {
-            value = new HashMap<String, MalVal>();
+            value = new HashMap<>();
             assoc_BANG(mvs);
         }
         public MalHashMap copy() throws MalThrowable {
-            Map<String,MalVal> shallowCopy = new HashMap<String,MalVal>();
+            Map<String,MalVal> shallowCopy = new HashMap<>();
             shallowCopy.putAll(value);
             MalHashMap new_hm = new MalHashMap(shallowCopy);
             new_hm.meta = meta;
@@ -333,8 +326,8 @@ public class types {
         }
     }
 
-    public static interface ILambda {
-        public MalVal apply(MalList args) throws MalThrowable;
+    public interface ILambda {
+        MalVal apply(MalList args) throws MalThrowable;
     }
 
     public static abstract class MalFunction extends MalVal

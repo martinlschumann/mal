@@ -1,20 +1,12 @@
 package mal;
 
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Set;
-import java.util.Map;
-import java.util.HashMap;
 import com.google.common.collect.ImmutableMap;
-
-import java.io.IOException;
-import java.io.FileNotFoundException;
-import java.util.Scanner;
-import java.io.File;
-
 import mal.types.*;
-import mal.printer;
-import mal.readline;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.*;
 
 public class core {
     // Local references for convenience
@@ -63,7 +55,7 @@ public class core {
         public MalVal apply(MalList args) throws MalThrowable {
             if (args.nth(0) instanceof MalString &&
                 (((MalString)args.nth(0)).getValue().charAt(0) == '\u029e')) {
-                return (MalString)args.nth(0);
+                return args.nth(0);
             } else {
                 return new MalString(
                         "\u029e" + ((MalString)args.nth(0)).getValue());
@@ -262,8 +254,11 @@ public class core {
         public MalVal apply(MalList a) throws MalThrowable {
             MalHashMap mhm = (MalHashMap)a.nth(0);
             HashMap<String,MalVal> hm = (HashMap<String,MalVal>)mhm.value;
-            MalHashMap new_mhm = new MalHashMap((Map)hm.clone());
-            new_mhm.assoc_BANG((MalList)a.slice(1));
+            HashMap<String,MalVal> copy = new HashMap<>();
+            //uses putall instead of clone, because clone does not work correctly
+            copy.putAll(hm);
+            MalHashMap new_mhm = new MalHashMap(copy);
+            new_mhm.assoc_BANG(a.slice(1));
             return new_mhm;
         }
     };
@@ -272,8 +267,11 @@ public class core {
         public MalVal apply(MalList a) throws MalThrowable {
             MalHashMap mhm = (MalHashMap)a.nth(0);
             HashMap<String,MalVal> hm = (HashMap<String,MalVal>)mhm.value;
-            MalHashMap new_mhm = new MalHashMap((Map)hm.clone());
-            new_mhm.dissoc_BANG((MalList)a.slice(1));
+            HashMap<String,MalVal> copy = new HashMap<>();
+            //uses putall instead of clone, because clone does not work correctly
+            copy.putAll(hm);
+            MalHashMap new_mhm = new MalHashMap(copy);
+            new_mhm.dissoc_BANG(a.slice(1));
             return new_mhm;
         }
     };
@@ -352,22 +350,22 @@ public class core {
 
     static MalFunction cons = new MalFunction() {
         public MalVal apply(MalList a) throws MalThrowable {
-            List<MalVal> lst = new ArrayList<MalVal>();
+            List<MalVal> lst = new ArrayList<>();
             lst.add(a.nth(0));
-            lst.addAll(((MalList)a.nth(1)).getList());
-            return (MalVal)new MalList(lst);
+            lst.addAll(((MalList) a.nth(1)).getList());
+            return new MalList(lst);
         }
     };
 
     static MalFunction concat = new MalFunction() {
         public MalVal apply(MalList a) throws MalThrowable {
             if (a.size() == 0) { return new MalList(); }
-            List<MalVal> lst = new ArrayList<MalVal>();
+            List<MalVal> lst = new ArrayList<>();
             lst.addAll(((MalList)a.nth(0)).value);
             for(Integer i=1; i<a.size(); i++) {
                 lst.addAll(((MalList)a.nth(i)).value);
             }
-            return (MalVal)new MalList(lst);
+            return new MalList(lst);
         }
     };
 
@@ -412,7 +410,7 @@ public class core {
                     new_seq.value.add(0, a.nth(i));
                 }
             }
-            return (MalVal) new_seq;
+            return new_seq;
         }
     };
 
@@ -450,7 +448,7 @@ public class core {
 
     static MalFunction with_meta = new MalFunction() {
         public MalVal apply(MalList args) throws MalThrowable {
-            MalVal new_mv = ((MalVal)args.nth(0)).copy();
+            MalVal new_mv = (args.nth(0)).copy();
             new_mv.setMeta(args.nth(1));
             return new_mv;
         }
@@ -487,7 +485,7 @@ public class core {
             MalAtom atm = (MalAtom)a.nth(0);
             MalFunction f = (MalFunction)a.nth(1);
             MalList new_args = new MalList();
-            new_args.value.addAll(((MalList)a.slice(2)).value);
+            new_args.value.addAll(a.slice(2).value);
             new_args.value.add(0, atm.value);
             atm.value = f.apply(new_args);
             return atm.value;

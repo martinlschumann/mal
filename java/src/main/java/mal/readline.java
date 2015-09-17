@@ -1,19 +1,13 @@
 package mal;
 
-import java.io.IOException;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-
-import java.io.File;
 import com.google.common.io.Files;
-import java.nio.charset.StandardCharsets;
-import java.util.List;
-
 import com.sun.jna.Library;
 import com.sun.jna.Native;
-import com.sun.jna.Platform;
+
+import java.io.*;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 class readline {
     public enum Mode { JNA, JAVA }
@@ -58,11 +52,10 @@ class readline {
     }
 
     public static void appendHistory(String filename, String line) {
-        try {
-            BufferedWriter w;
-            w = new BufferedWriter(new FileWriter(filename, true));
-            w.append(line + "\n");
-            w.close();
+        try (BufferedWriter w = new BufferedWriter(new FileWriter(filename, true)))
+        {
+            w.append(line).append("\n");
+            //w.close is no longer needed, because  of try with resources
         } catch (IOException e) {
             // ignore
         }
@@ -86,7 +79,7 @@ class readline {
     public static String java_readline(String prompt)
             throws EOFException, IOException {
         System.out.print(prompt);
-        BufferedReader buffer=new BufferedReader(new InputStreamReader(System.in));
+        BufferedReader buffer=new BufferedReader(new InputStreamReader(System.in, Charset.defaultCharset()));
         String line=buffer.readLine();
         if (line == null) {
             throw new EOFException();

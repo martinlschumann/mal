@@ -1,10 +1,11 @@
 package mal;
 
+import mal.types.*;
+import org.apache.commons.lang3.StringEscapeUtils;
+
 import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.apache.commons.lang3.StringEscapeUtils;
-import mal.types.*;
 
 public class reader {
     public static class ParseError extends MalThrowable {
@@ -34,7 +35,7 @@ public class reader {
     }
 
     public static ArrayList<String> tokenize(String str) {
-        ArrayList<String> tokens = new ArrayList<String>();
+        ArrayList<String> tokens = new ArrayList<>();
         Pattern pattern = Pattern.compile("[\\s ,]*(~@|[\\[\\]{}()'`~@]|\"(?:[\\\\].|[^\\\\\"])*\"|;.*|[^\\s \\[\\]{}()'\"`~@,;]*)");
         Matcher matcher = pattern.matcher(str);
         while (matcher.find()) {

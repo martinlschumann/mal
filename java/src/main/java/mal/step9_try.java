@@ -1,19 +1,13 @@
 package mal;
 
-import java.io.IOException;
-
-import java.io.StringWriter;
-import java.io.PrintWriter;
-import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Iterator;
-import mal.types.*;
-import mal.readline;
-import mal.reader;
-import mal.printer;
 import mal.env.Env;
-import mal.core;
+import mal.types.*;
+
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.Iterator;
+import java.util.Map;
 
 public class step9_try {
     // read
@@ -32,12 +26,12 @@ public class step9_try {
         } else {
             MalVal a0 = ((MalList)ast).nth(0);
             if ((a0 instanceof MalSymbol) &&
-                (((MalSymbol)a0).getName() == "unquote")) {
+                (((MalSymbol)a0).getName().equals("unquote"))) {
                 return ((MalList)ast).nth(1);
             } else if (is_pair(a0)) {
                 MalVal a00 = ((MalList)a0).nth(0);
                 if ((a00 instanceof MalSymbol) &&
-                    (((MalSymbol)a00).getName() == "splice-unquote")) {
+                    (((MalSymbol)a00).getName().equals("splice-unquote"))) {
                     return new MalList(new MalSymbol("concat"),
                                        ((MalList)a0).nth(1),
                                        quasiquote(((MalList)ast).rest()));
@@ -81,8 +75,8 @@ public class step9_try {
         } else if (ast instanceof MalList) {
             MalList old_lst = (MalList)ast;
             MalList new_lst = ast.list_Q() ? new MalList()
-                                           : (MalList)new MalVector();
-            for (MalVal mv : (List<MalVal>)old_lst.value) {
+                                           : new MalVector();
+            for (MalVal mv : old_lst.value) {
                 new_lst.conj_BANG(EVAL(mv, env));
             }
             return new_lst;
@@ -91,7 +85,7 @@ public class step9_try {
             Iterator it = ((MalHashMap)ast).value.entrySet().iterator();
             while (it.hasNext()) {
                 Map.Entry entry = (Map.Entry)it.next();
-                new_hm.value.put(entry.getKey(), EVAL((MalVal)entry.getValue(), env));
+                new_hm.value.put(entry.getKey().toString(), EVAL((MalVal)entry.getValue(), env));
             }
             return new_hm;
         } else {
@@ -100,7 +94,7 @@ public class step9_try {
     }
 
     public static MalVal EVAL(MalVal orig_ast, Env env) throws MalThrowable {
-        MalVal a0, a1,a2, a3, res;
+        MalVal a0, a1,a2, res;
         MalList el;
 
         while (true) {
@@ -237,8 +231,8 @@ public class step9_try {
         final Env repl_env = new Env(null);
 
         // core.java: defined using Java
-        for (String key : core.ns.keySet()) {
-            repl_env.set(new MalSymbol(key), core.ns.get(key));
+        for (Map.Entry<String, MalVal> entry : core.ns.entrySet()) {
+            repl_env.set(new MalSymbol(entry.getKey()), entry.getValue());
         }
         repl_env.set(new MalSymbol("eval"), new MalFunction() {
             public MalVal apply(MalList args) throws MalThrowable {
@@ -283,16 +277,12 @@ public class step9_try {
             try {
                 System.out.println(PRINT(RE(repl_env, line)));
             } catch (MalContinue e) {
-                continue;
             } catch (MalException e) {
                 System.out.println("Error: " + printer._pr_str(e.getValue(), false));
-                continue;
             } catch (MalThrowable t) {
                 System.out.println("Error: " + t.getMessage());
-                continue;
             } catch (Throwable t) {
                 System.out.println("Uncaught " + t + ": " + t.getMessage());
-                continue;
             }
         }
     }

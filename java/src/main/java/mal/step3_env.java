@@ -1,16 +1,11 @@
 package mal;
 
-import java.io.IOException;
-
-import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Iterator;
-import mal.types.*;
-import mal.readline;
-import mal.reader;
-import mal.printer;
 import mal.env.Env;
+import mal.types.*;
+
+import java.io.IOException;
+import java.util.Iterator;
+import java.util.Map;
 
 public class step3_env {
     // read
@@ -25,8 +20,8 @@ public class step3_env {
         } else if (ast instanceof MalList) {
             MalList old_lst = (MalList)ast;
             MalList new_lst = ast.list_Q() ? new MalList()
-                                           : (MalList)new MalVector();
-            for (MalVal mv : (List<MalVal>)old_lst.value) {
+                                           : new MalVector();
+            for (MalVal mv : old_lst.value) {
                 new_lst.conj_BANG(EVAL(mv, env));
             }
             return new_lst;
@@ -35,7 +30,7 @@ public class step3_env {
             Iterator it = ((MalHashMap)ast).value.entrySet().iterator();
             while (it.hasNext()) {
                 Map.Entry entry = (Map.Entry)it.next();
-                new_hm.value.put(entry.getKey(), EVAL((MalVal)entry.getValue(), env));
+                new_hm.value.put(entry.getKey().toString(), EVAL((MalVal)entry.getValue(), env));
             }
             return new_hm;
         } else {
@@ -143,13 +138,10 @@ public class step3_env {
             try {
                 System.out.println(PRINT(RE(repl_env, line)));
             } catch (MalContinue e) {
-                continue;
             } catch (MalThrowable t) {
                 System.out.println("Error: " + t.getMessage());
-                continue;
             } catch (Throwable t) {
                 System.out.println("Uncaught " + t + ": " + t.getMessage());
-                continue;
             }
         }
     }

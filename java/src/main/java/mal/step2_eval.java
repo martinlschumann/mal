@@ -1,15 +1,11 @@
 package mal;
 
-import java.io.IOException;
+import mal.types.*;
 
-import java.util.List;
-import java.util.Map;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
-import mal.types.*;
-import mal.readline;
-import mal.reader;
-import mal.printer;
+import java.util.Map;
 
 public class step2_eval {
     // read
@@ -25,8 +21,8 @@ public class step2_eval {
         } else if (ast instanceof MalList) {
             MalList old_lst = (MalList)ast;
             MalList new_lst = ast.list_Q() ? new MalList()
-                                           : (MalList)new MalVector();
-            for (MalVal mv : (List<MalVal>)old_lst.value) {
+                                           : new MalVector();
+            for (MalVal mv : old_lst.value) {
                 new_lst.conj_BANG(EVAL(mv, env));
             }
             return new_lst;
@@ -35,7 +31,7 @@ public class step2_eval {
             Iterator it = ((MalHashMap)ast).value.entrySet().iterator();
             while (it.hasNext()) {
                 Map.Entry entry = (Map.Entry)it.next();
-                new_hm.value.put(entry.getKey(), EVAL((MalVal)entry.getValue(), env));
+                new_hm.value.put(entry.getKey().toString(), EVAL((MalVal)entry.getValue(), env));
             }
             return new_hm;
         } else {
@@ -102,7 +98,7 @@ public class step2_eval {
     public static void main(String[] args) throws MalThrowable {
         String prompt = "user> ";
 
-        HashMap repl_env = new HashMap();
+        HashMap<String, MalFunction> repl_env = new HashMap<>();
         repl_env.put("+", add);
         repl_env.put("-", subtract);
         repl_env.put("*", multiply);
@@ -125,13 +121,10 @@ public class step2_eval {
             try {
                 System.out.println(PRINT(RE(repl_env, line)));
             } catch (MalContinue e) {
-                continue;
             } catch (MalThrowable t) {
                 System.out.println("Error: " + t.getMessage());
-                continue;
             } catch (Throwable t) {
                 System.out.println("Uncaught " + t + ": " + t.getMessage());
-                continue;
             }
         }
     }

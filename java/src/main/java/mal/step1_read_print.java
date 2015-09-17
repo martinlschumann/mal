@@ -1,11 +1,10 @@
 package mal;
 
-import java.io.IOException;
+import mal.types.MalContinue;
+import mal.types.MalThrowable;
+import mal.types.MalVal;
 
-import mal.types.*;
-import mal.readline;
-import mal.reader;
-import mal.printer;
+import java.io.IOException;
 
 public class step1_read_print {
     // read
@@ -48,13 +47,10 @@ public class step1_read_print {
             try {
                 System.out.println(PRINT(RE(null, line)));
             } catch (MalContinue e) {
-                continue;
             } catch (MalThrowable t) {
                 System.out.println("Error: " + t.getMessage());
-                continue;
             } catch (Throwable t) {
                 System.out.println("Uncaught " + t + ": " + t.getMessage());
-                continue;
             }
         }
     }
